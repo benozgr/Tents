@@ -1,0 +1,13 @@
+name: CadirClaim
+version: '${project.version}'
+main: me.benozgr.CadirClaim
+api-version: '1.21'
+authors: [benozgr]
+depend: [Vault]
+commands:
+  çadır:
+    description: Çadır satın alma menüsünü açar.
+    usage: /çadır
+  çadırım:
+    description: Claim ve üye moderasyonu.
+    usage: /çadırım <subcommand>

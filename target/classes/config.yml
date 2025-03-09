@@ -1,0 +1,164 @@
+
+                  # made by benozgr #
+                        # <3 #
+
+# Sınır efekti
+particle:
+  type: DUST # https://minecraft.wiki/w/Particles_(Java_Edition) efekt ismi yanlış yazılırsa varsayılan olarak dust efekti kullanılır.
+  color: # Google renk seçiçi (https://g.co/kgs/ZNAdmrW) kullanıp RGB kısmındaki sayıları sırasıyla yazabilirsiniz - Destekleyen efektlerde geçerlidir.
+    red: 255
+    green: 0
+    blue: 0
+
+# Çadır konfigürasyonu
+tents:
+  kucuk_cadir: # ID, GUI Konfigürasyonundaki ile aynı olmalı
+    price: 20000 # Para değeri
+    size: 16 # 16x16 olarak geçer
+    max_members: 10 # maks. üye sayısı
+    duration: 7 # gün olarak belirtiniz
+  buyuk_cadir:
+    price: 60000
+    size: 32
+    max_members: 20
+    duration: 7
+  dev_cadir:
+    price: 100000
+    size: 64
+    max_members: 50
+    duration: 7
+  krallik:
+    price: 3000000
+    size: 128
+    max_members: 100
+    duration: 30
+
+# Genel GUI konfigürasyonu (satın alım hariç)
+gui-titles:
+  main-menu: "&aÇadır Menüsü"
+  main-menu-size: 9
+  my-claims-menu: "&aÇadırlarım"
+  my-claims-menu-size: 27
+  member-management-menu: "&aÜye Yönetimi"
+  member-management-menu-size: 9
+
+# Satın alma GUI konfigürasyonu
+gui:
+  title: "&aÇadır Satın Al"
+  items:
+    kucuk_cadir:
+      slot: 0
+      material: WHITE_WOOL
+      name: "&eKüçük Çadır"
+      lore:
+        - "&7Fiyat: &a%price% Dirhem"
+        - "&7Boyut: &a%size%x%size%"
+        - "&7Max Üye: &a%max_members%"
+        - "&7Süre: &a%duration% Gün"
+    buyuk_cadir:
+      slot: 1
+      material: BLUE_WOOL
+      name: "&eBüyük Çadır"
+      lore:
+        - "&7Fiyat: &a%price% Dirhem"
+        - "&7Boyut: &a%size%x%size%"
+        - "&7Max Üye: &a%max_members%"
+        - "&7Süre: &a%duration% Gün"
+    dev_cadir:
+      slot: 2
+      material: RED_WOOL
+      name: "&eDev Çadır"
+      lore:
+        - "&7Fiyat: &a%price% Dirhem"
+        - "&7Boyut: &a%size%x%size%"
+        - "&7Max Üye: &a%max_members%"
+        - "&7Süre: &a%duration% Gün"
+    krallik:
+      slot: 3
+      material: GREEN_WOOL
+      name: "&eKrallık"
+      lore:
+        - "&7Fiyat: &a%price% Dirhem"
+        - "&7Boyut: &a%size%x%size%"
+        - "&7Max Üye: &a%max_members%"
+        - "&7Süre: &a%duration% Gün"
+
+# Main Menu Items
+main-menu-items:
+  purchase-tent:
+    material: GOLD_INGOT
+    name: "&eÇadır Satın Al"
+    lore:
+      - "&7Çadır satın almak için tıkla."
+    slot: 2
+  my-claims:
+    material: PAPER
+    name: "&eÇadırlarım"
+    lore:
+      - "&7Çadırlarını yönetmek için tıkla."
+    slot: 6
+
+# Member Management Menu Items
+member-management-items:
+  add-member:
+    material: PLAYER_HEAD
+    name: "&eYeni Üye Ekle"
+    lore:
+      - "&7Çadırına yeni üye eklemek için tıkla."
+    slot: 0
+  edit-members:
+    material: BOOK
+    name: "&eÜyeleri Düzenle"
+    lore:
+      - "&7Çadır üyelerini düzenlemek için tıkla."
+    slot: 2
+  remove-member:
+    material: BARRIER
+    name: "&eÜyeyi Çıkar"
+    lore:
+      - "&7Çadırından üye çıkarmak için tıkla."
+    slot: 4
+
+# Action Bar Messages
+action-bar-messages:
+  enter-claim: "&aClaim sahibi: &e%owner%"
+  exit-claim: "&e%owner% &aclaim'inden çıkıldı"
+  duration: 3 # Duration in seconds
+
+# Mesajlar
+messages:
+  only-players: "&cBu komutu sadece oyuncular kullanabilir."
+  no-claim: "&cHiç claim'in yok."
+  player-not-found: "&cOyuncu bulunamadı: %player%"
+  command-usage: "&cKullanım: /çadırım <alt komut>"
+  invalid-subcommand: "&cGeçersiz alt komut."
+  member-added: "&a%player% claim'ine eklendi."
+  member-removed: "&c%player% claim'inden çıkarıldı."
+  permission-granted: "&a%player% adlı oyuncuya %permission% izni verildi."
+  permission-revoked: "&c%player% adlı oyuncunun %permission% izni kaldırıldı."
+  not-a-member: "&c%player% bu claim'in bir üyesi değil."
+  admin-added: "&a%player% artık bu claim'in yetkilisi."
+  admin-removed: "&c%player% artık bu claim'in yetkilisi değil."
+  no-permission: "&cBu işlemi yapmak için yetkiniz yok."
+  claim-info: "&aÇadır Bilgisi:"
+  claim-info-owner: "&7Sahip: &e%owner%"
+  claim-info-size: "&7Boyut: &e%size%x%size%"
+  claim-info-members: "&7Üyeler: &e%members%"
+  claim-info-expiration: "&7Süre: &e%expiration%"
+  confirm-purchase: "&aSatın almayı onaylamak için &e'onayla' &ayazınız. Fiyat: &e%price% Dirhem"
+  purchase-cancelled: "&cSatın alma işlemi iptal edildi."
+  cannot-build-here: "&cBurası zaten kapılmış!"
+  claim-overlap: "&cClaiminiz başka bir claim ile üst üste biniyor."
+  invalid-tent-selection: "&cGeçersiz çadır seçimi. Lütfen tekrar deneyin ya da yetkililere bildirin."
+  no-boundary-selected: "&cLütfen önce bir sınır belirleyin (sol tık)."
+  claim-confirmed: "&aClaim başarıyla oluşturuldu!"
+  claim-enter-subtitle: "&aClaim sahibi: &e%owner%"
+  claim-purchased: "&aClaim satın alındı! Fiyat: &e%price% Dirhem"
+  not-enough-money: "&cYeterli Dirhem'in yok.."
+  claim-preview: "&aClaim önizlemesi gösteriliyor. Boyut: &e%size%x%size%"
+  claim-expired: "&cClaim'inin süresi doldu. Koordinatlar: &e%location%"
+  claim-limit-reached: "&cBu dünyada maksimum claim sayısına ulaştın."
+  claim-too-close: "&cBu claim diğerine çok yakın."
+  remove-member-prompt: "&aÇıkarmak istediğiniz üyenin adını yazınız."
+  removed-from-claim: "&c%owner% adlı oyuncu sizi claim'inden çıkardı."
+  boundaries-shown: "&aClaim sınırları gösteriliyor."
