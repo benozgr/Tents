@@ -1,52 +1,47 @@
 package me.benozgr;
 
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.Location;
 
 import java.util.*;
 
 public class Claim {
+    private final UUID id;
     private final UUID owner;
-    private final Set<UUID> members;
-    private final Map<UUID, Set<String>> permissions;
-    private final Set<UUID> admins; // New: Store admin UUIDs
-    private final long expirationDate;
-    private final String tentType;
     private final Location location;
     private final Tent tent;
+    private final Map<UUID, Set<String>> memberPermissions;
+    private Date expirationDate;
+    private String name;
+    private Hologram hologram;
+    private int rentAttempts; // Track failed rent attempts
+    private Date lastRentAttempt; // Track the last rent attempt date
 
-    public Claim(UUID owner, String tentType, Location location, Tent tent) {
+    public Claim(UUID owner, Location location, Tent tent) {
+        this.id = UUID.randomUUID();
         this.owner = owner;
-        this.tentType = tentType;
         this.location = location;
         this.tent = tent;
-        this.members = new HashSet<>();
-        this.permissions = new HashMap<>();
-        this.admins = new HashSet<>(); // Initialize admins set
-        this.expirationDate = System.currentTimeMillis() + getDurationMillis(tent);
+        this.memberPermissions = new HashMap<>();
+        this.memberPermissions.put(owner, new HashSet<>(Arrays.asList("block_place", "block_break", "mob_kill", "animal_kill", "open_chests", "add_members")));
+        this.expirationDate = calculateExpirationDate(tent.getDuration());
+        this.name = "İsimsiz Claim";
+        this.rentAttempts = 0;
+        this.lastRentAttempt = null;
+    }
+
+    private Date calculateExpirationDate(int durationInDays) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, durationInDays);
+        return calendar.getTime();
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public UUID getOwner() {
         return owner;
-    }
-
-    public Set<UUID> getMembers() {
-        return members;
-    }
-
-    public Map<UUID, Set<String>> getPermissions() {
-        return permissions;
-    }
-
-    public Set<UUID> getAdmins() {
-        return admins;
-    }
-
-    public long getExpirationDate() {
-        return expirationDate;
-    }
-
-    public String getTentType() {
-        return tentType;
     }
 
     public Location getLocation() {
@@ -57,45 +52,108 @@ public class Claim {
         return tent;
     }
 
-    public void addMember(UUID member) {
-        members.add(member);
-        permissions.put(member, new HashSet<>());
+    public String getTentType() {
+        return tent.getType();
     }
 
-    public void removeMember(UUID member) {
-        members.remove(member);
-        permissions.remove(member);
+    public Date getExpirationDate() {
+        return expirationDate;
     }
 
-    public void setPermission(UUID member, String permission, boolean value) {
-        if (!members.contains(member)) {
-            return; // Player is not a member, do nothing
-        }
+    public void setExpirationDate(Date expirationDate) {
+        this.expirationDate = expirationDate;
+    }
 
+    public void addMember(UUID memberId) {
+        memberPermissions.computeIfAbsent(memberId, k -> new HashSet<>());
+    }
+
+    public void removeMember(UUID memberId) {
+        memberPermissions.remove(memberId);
+    }
+
+    public Set<UUID> getMembers() {
+        return memberPermissions.keySet();
+    }
+
+    public boolean hasPermission(UUID memberId, String permission) {
+        return memberPermissions.getOrDefault(memberId, Collections.emptySet()).contains(permission);
+    }
+
+    public void setPermission(UUID memberId, String permission, boolean value) {
+        Set<String> perms = memberPermissions.computeIfAbsent(memberId, k -> new HashSet<>());
         if (value) {
-            permissions.get(member).add(permission);
+            perms.add(permission);
         } else {
-            permissions.get(member).remove(permission);
+            perms.remove(permission);
         }
     }
 
-    public boolean hasPermission(UUID member, String permission) {
-        return permissions.containsKey(member) && permissions.get(member).contains(permission);
+    public Map<UUID, Set<String>> getMemberPermissions() {
+        return memberPermissions;
     }
 
-    public void addAdmin(UUID admin) {
-        admins.add(admin);
+    public Set<String> getPermissions(UUID memberId) {
+        return memberPermissions.getOrDefault(memberId, Collections.emptySet());
     }
 
-    public void removeAdmin(UUID admin) {
-        admins.remove(admin);
+    public String getName() {
+        return name;
     }
 
-    public boolean isAdmin(UUID player) {
-        return admins.contains(player);
+    public void setName(String name) {
+        this.name = name;
     }
 
-    private long getDurationMillis(Tent tent) {
-        return tent.getDuration() * 24L * 60 * 60 * 1000;
+    public Hologram getHologram() {
+        return hologram;
+    }
+
+    public void setHologram(Hologram hologram) {
+        this.hologram = hologram;
+    }
+
+    public int getRentAttempts() {
+        return rentAttempts;
+    }
+
+    public void incrementRentAttempts() {
+        this.rentAttempts++;
+    }
+
+    public void resetRentAttempts() {
+        this.rentAttempts = 0;
+    }
+
+    public Date getLastRentAttempt() {
+        return lastRentAttempt;
+    }
+
+    public void setLastRentAttempt(Date lastRentAttempt) {
+        this.lastRentAttempt = lastRentAttempt;
+    }
+
+    // Get the rent price (original purchase price of the tent)
+    public double getRentPrice() {
+        return tent.getPrice();
+    }
+
+    // Get the duration to extend (original duration of the tent)
+    public int getRentDuration() {
+        return tent.getDuration();
+    }
+
+    @Override
+    public String toString() {
+        return "Claim{id=" + id.toString() +
+                ", owner=" + owner.toString() +
+                ", location=" + (location != null ? location.getWorld().getName() + "," + location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() : "null") +
+                ", tent=" + (tent != null ? tent.getName() : "null") +
+                ", name=" + name +
+                ", expirationDate=" + (expirationDate != null ? expirationDate.toString() : "null") +
+                ", memberPermissions=" + memberPermissions +
+                ", rentAttempts=" + rentAttempts +
+                ", lastRentAttempt=" + (lastRentAttempt != null ? lastRentAttempt.toString() : "null") +
+                "}";
     }
 }

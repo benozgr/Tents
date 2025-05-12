@@ -6,8 +6,33 @@ authors: [benozgr]
 depend: [Vault]
 commands:
   çadır:
-    description: Çadır satın alma menüsünü açar.
-    usage: /çadır
+    description: Çadır ile ilgili komutlar
   çadırım:
-    description: Claim ve üye moderasyonu.
-    usage: /çadırım <subcommand>
+    description: Çadır üyelik komutları
+  çadıryardım:
+    description: Çadır yardım komutları
+  eco:
+    description: Ekonomi yönetim komutları
+    usage: /eco <give|take|set|balance|reset|baltop> [oyuncu] [miktar]
+permissions:
+  cadirclaim.admin:
+    description: Allows use of admin commands for CadirClaim
+    default: op
+  cadirclaim.eco.give:
+    description: Allows giving money to players
+    default: op
+  cadirclaim.eco.take:
+    description: Allows taking money from players
+    default: op
+  cadirclaim.eco.set:
+    description: Allows setting player balances
+    default: op
+  cadirclaim.eco.reset:
+    description: Allows resetting player balances
+    default: op
+  cadirclaim.eco.baltop:
+    description: Allows viewing the top balance list
+    default: op
+  cadirclaim.eco.balance:
+    description: Allows checking balances
+    default: true

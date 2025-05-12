@@ -42,17 +42,24 @@ public class MemberRemoveListener implements Listener {
 
             Claim claim = pendingRemovals.get(playerId);
 
-            // Check if the target is a member of the claim
+            // Check if the target is a member
             if (!claim.getMembers().contains(target.getUniqueId())) {
                 player.sendMessage(plugin.getMessage("not-a-member", Map.of("player", targetName)));
                 return;
             }
 
-            // Remove the member
+            if (player.getUniqueId().equals(target.getUniqueId())) {
+                player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessage("cannot-remove-self", null)));
+                pendingRemovals.remove(playerId);
+                return;
+            }
+
+            // Remove the member from the claim
             claim.removeMember(target.getUniqueId());
             player.sendMessage(plugin.getMessage("member-removed", Map.of("player", targetName)));
             target.sendMessage(plugin.getMessage("removed-from-claim", Map.of("owner", player.getName())));
 
+            // Unregister this listener
             pendingRemovals.remove(playerId);
         }
     }

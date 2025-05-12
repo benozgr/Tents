@@ -1,22 +1,36 @@
-
-                  # made by benozgr #
-                        # <3 #
+# made by benozgr #
+# <3 #
 
 # Sınır efekti
 particle:
-  type: DUST # https://minecraft.wiki/w/Particles_(Java_Edition) efekt ismi yanlış yazılırsa varsayılan olarak dust efekti kullanılır.
-  color: # Google renk seçiçi (https://g.co/kgs/ZNAdmrW) kullanıp RGB kısmındaki sayıları sırasıyla yazabilirsiniz - Destekleyen efektlerde geçerlidir.
+  type: DUST
+  color: # belirtilen efekt renk ayarlaması destekliyorsa bu değerler kullanılır (destekleyen efekt: DUST)
     red: 255
     green: 0
     blue: 0
 
+# Ekonomi ayarları
+economy:
+  use-custom-provider: true  # CadirClaim'in ekonomi sağlayıcısını zorlamak için "true", başka bir vault destekli ekonomi sağlayıcısı kullanmak için (Essentials, LiteEco...) "false"
+  starting-balance: 500.0    # yeni oyuncular için başlangıç bakiyesi
+  currency-name-singular: "Dirhem"  # para biriminin tekil hali
+  currency-name-plural: "Dirhem"   # çoğul hali
+  max-money: 10000000000000.0 # 10 trilyon, java'da izin verilen sınır
+  min-money: -10000.0
+  economy-log-enabled: false
+
+# Claim sınırlamaları
+claim-limits:
+  max-claims-per-world: 3 # dünyada alınabilecek max. claim sayısı
+  min-distance-between-claims: 100 # claimler arası gerekli min. blok
+
 # Çadır konfigürasyonu
 tents:
-  kucuk_cadir: # ID, GUI Konfigürasyonundaki ile aynı olmalı
-    price: 20000 # Para değeri
-    size: 16 # 16x16 olarak geçer
-    max_members: 10 # maks. üye sayısı
-    duration: 7 # gün olarak belirtiniz
+  kucuk_cadir:
+    price: 20000
+    size: 16
+    max_members: 10
+    duration: 7
   buyuk_cadir:
     price: 60000
     size: 32
@@ -33,14 +47,23 @@ tents:
     max_members: 100
     duration: 30
 
-# Genel GUI konfigürasyonu (satın alım hariç)
+# Kira ayarları
+rent-settings:
+  grace-period: 3 # Kira süresi dolduktan sonra ödeme için tanınan ek süre (gün)
+  max-rent-attempts: 3 # Başarısız kira ödeme denemelerinden sonra claim'in kaldırılacağı maksimum deneme sayısı
+
+# Genel GUI konfigürasyonu (satın alım ve onaylama hariç)
 gui-titles:
   main-menu: "&aÇadır Menüsü"
   main-menu-size: 9
   my-claims-menu: "&aÇadırlarım"
-  my-claims-menu-size: 27
-  member-management-menu: "&aÜye Yönetimi"
-  member-management-menu-size: 9
+  my-claims-menu-size: 54 # 27'den 54'e artırıldı, daha fazla claim ve kira düğmesi için
+  claim-management-menu: "&aClaim Yönetimi"
+  claim-management-menu-size: 9
+  member-edit-menu: "%type% - Üye Düzenleme"
+  member-edit-menu-size: 54
+  member-permissions-menu: "&eYetkiler - %member%"
+  member-permissions-menu-size: 9
 
 # Satın alma GUI konfigürasyonu
 gui:
@@ -83,7 +106,42 @@ gui:
         - "&7Max Üye: &a%max_members%"
         - "&7Süre: &a%duration% Gün"
 
-# Main Menu Items
+# Kira ödeme düğmesi konfigürasyonu
+rent-menu:
+  items:
+    pay-rent:
+      material: GOLD_INGOT
+      name: "&eÇadır Kira Ödeme"
+      lore:
+        - "&7Fiyat: &a%price% Dirhem"
+        - "&7Süre: &a%duration% Gün"
+        - "&7Tıkla ve kirayı öde."
+    back:
+      slot: 26
+      material: ARROW
+      name: "&eGeri"
+      lore:
+        - "&7Önceki menüye dön."
+
+confirm-menu: # satın alma onay menüsü
+  title: "&eSatın Almayı Onayla"
+  size: 9
+  items:
+    accept:
+      slot: 3
+      material: LIME_DYE
+      name: "&aSatın Almayı Onayla"
+      lore:
+        - "&7Fiyat: &a%price% Dirhem"
+        - "&7Tıkla ve satın almayı onayla."
+    deny:
+      slot: 5
+      material: RED_DYE
+      name: "&cSatın Almayı İptal Et"
+      lore:
+        - "&7Tıkla ve satın almayı iptal et."
+
+# Ana menü eşyaları
 main-menu-items:
   purchase-tent:
     material: GOLD_INGOT
@@ -98,67 +156,172 @@ main-menu-items:
       - "&7Çadırlarını yönetmek için tıkla."
     slot: 6
 
-# Member Management Menu Items
-member-management-items:
-  add-member:
-    material: PLAYER_HEAD
-    name: "&eYeni Üye Ekle"
-    lore:
-      - "&7Çadırına yeni üye eklemek için tıkla."
-    slot: 0
-  edit-members:
-    material: BOOK
-    name: "&eÜyeleri Düzenle"
-    lore:
-      - "&7Çadır üyelerini düzenlemek için tıkla."
-    slot: 2
-  remove-member:
-    material: BARRIER
-    name: "&eÜyeyi Çıkar"
-    lore:
-      - "&7Çadırından üye çıkarmak için tıkla."
-    slot: 4
+# Çadırlarım menüsü eşyaları
+my-claims-items:
+  lore:
+    default:
+      - "&7Koordinatlar: &e%x%, %y%, %z%"
+      - "&7Kalan Süre: &e%days% gün"
+      - ""
+      - "&fTıkla ve işlem menüsünü aç"
 
-# Action Bar Messages
+# Claim yönetim menüsü eşyaları
+claim-management-items:
+  edit-members:
+    slot: 2
+    material: BOOK
+    name: "&eÜyeleri düzenle"
+    lore:
+      - "&7Üyelerin yetkilerini düzenlemek için tıkla."
+  show-limits:
+    slot: 3
+    material: REDSTONE
+    name: "&bSınırları Göster"
+    lore:
+      - "&7Claim sınırlarını göstermek için tıkla."
+    particle-duration: 200 # efekt gösterimi ne kadar sürsün? tick olarak belirtiniz (1 saniye = 20 tick)
+    particle-interval: 20 # efekt gösterimleri arasında ne kadar zaman geçsin? tick olarak belirtiniz
+  disband-claim:
+    slot: 4
+    material: BARRIER
+    name: "&cÇadırı Kaldır"
+    lore:
+      - "&7Bu çadırı kalıcı olarak kaldırır ve"
+      - "&7çadır eşyasını envanterine geri verir."
+  member-edit:
+    member-head:
+      lore-click: "&aTıkla: Yetkileri düzenle"
+    close:
+      material: BARRIER
+      name: "&cKapat"
+      lore:
+        - "&7Menüyü kapatır ve geri döner."
+    next-page:
+      material: ARROW
+      name: "&eSonraki Sayfa"
+      lore:
+        - "&7Bir sonraki üyeleri gösterir."
+    prev-page:
+      material: ARROW
+      name: "&eÖnceki Sayfa"
+      lore:
+        - "&7Önceki üyeleri gösterir."
+  member-permissions:
+    remove-member:
+      material: BARRIER
+      name: "&cÜyeyi Çıkar"
+      lore:
+        - "&7Üyeyi claim'den çıkarır."
+    back:
+      material: ARROW
+      name: "&eGeri"
+      lore:
+        - "&7Üye listesine geri döner."
+
+# İzinler
+permissions:
+  block_place:
+    display-name: "&7Blok Yerleştirme"
+    material: "STONE"
+  block_break:
+    display-name: "&7Blok Kırma"
+    material: "IRON_PICKAXE"
+  mob_kill:
+    display-name: "&7Mob Öldürme"
+    material: "IRON_SWORD"
+  animal_kill:
+    display-name: "&7Hayvan Öldürme"
+    material: "BEEF"
+  open_chests:
+    display-name: "&7Sandık Açma"
+    material: "CHEST"
+  add_members:
+    display-name: "&7Üye Ekleme"
+    material: "PLAYER_HEAD"
+
+# Action Bar
 action-bar-messages:
   enter-claim: "&aClaim sahibi: &e%owner%"
   exit-claim: "&e%owner% &aclaim'inden çıkıldı"
-  duration: 3 # Duration in seconds
+  duration: 3
+
+# Yardım komutları
+help-commands:
+  - "&e/çadır &7- Ana çadır menüsünü açar."
+  - "&e/çadır satın-al &7- Çadır satın alma menüsünü açar."
+  - "&e/çadırlarım &7- Çadırlarını listeler ve menüyü açar."
+  - "&e/çadır ekle <oyuncu> &7- Claim'ine üye ekler."
+  - "&e/çadır at <oyuncu> &7- Claim'inden üye çıkarır."
+  - "&e/çadıryardım &7- Bu yardım mesajını gösterir."
+
+# Çadır üstü hologram satırları
+hologram:
+  offset-y: 2.0 # Hologramın claim bloğunun üzerindeki yüksekliği (blok cinsinden)
+  lines:
+    - "&a%claim-name%"
+    - ""
+    - "&fSahibi: &e%owner%"
+    - "&fBitiş tarihi: &e%expiration-date%"
+    - ""
+    - "&7Sağ tıklayıp işlem menüsünü açabilirsin"
 
 # Mesajlar
 messages:
+  add-member-request: "&e%player% sizi claim'ine eklemek istiyor. &a[Kabul Et]"
+  add-member-request-sent: "&a%player% oyuncusuna claim'e katılma isteği gönderildi."
+  add-member-timeout: "&cClaim'e üye ekleme süresi doldu."
+  add-member-timeout-self: "&c%player% oyuncusunun claim'e üye ekleme süresi doldu."
+  member-added: "&a%player% claim'e eklendi!"
+  member-added-self: "&a%player% oyuncusunun claim'ine eklendiniz!"
+  add-member-declined: "&c%player% claim'e katılma isteğini reddetti."
+  add-member-declined-self: "&c%player% oyuncusunun claim'ine katılma isteğini reddettiniz."
+  member-removed: "&c%player% claim'inden çıkarıldı."
+  member-removed-self: "&c%player% tarafından claim'den çıkarıldınız."
   only-players: "&cBu komutu sadece oyuncular kullanabilir."
   no-claim: "&cHiç claim'in yok."
+  no-tent: "&cHenüz bir çadır almadın."
   player-not-found: "&cOyuncu bulunamadı: %player%"
   command-usage: "&cKullanım: /çadırım <alt komut>"
   invalid-subcommand: "&cGeçersiz alt komut."
-  member-added: "&a%player% claim'ine eklendi."
-  member-removed: "&c%player% claim'inden çıkarıldı."
   permission-granted: "&a%player% adlı oyuncuya %permission% izni verildi."
   permission-revoked: "&c%player% adlı oyuncunun %permission% izni kaldırıldı."
   not-a-member: "&c%player% bu claim'in bir üyesi değil."
-  admin-added: "&a%player% artık bu claim'in yetkilisi."
-  admin-removed: "&c%player% artık bu claim'in yetkilisi değil."
   no-permission: "&cBu işlemi yapmak için yetkiniz yok."
   claim-info: "&aÇadır Bilgisi:"
   claim-info-owner: "&7Sahip: &e%owner%"
   claim-info-size: "&7Boyut: &e%size%x%size%"
   claim-info-members: "&7Üyeler: &e%members%"
   claim-info-expiration: "&7Süre: &e%expiration%"
-  confirm-purchase: "&aSatın almayı onaylamak için &e'onayla' &ayazınız. Fiyat: &e%price% Dirhem"
+  confirm-purchase: "&aSatın almayı onaylamak için &e'onayla'&a, iptal etmek için &e'iptal' &ayazınız. Fiyat: &e%price% Dirhem"
   purchase-cancelled: "&cSatın alma işlemi iptal edildi."
-  cannot-build-here: "&cBurası zaten kapılmış!"
-  claim-overlap: "&cClaiminiz başka bir claim ile üst üste biniyor."
+  cannot-build-here: "&cBurası başkası tarafından kapılmış!"
+  limit-reached: "&cBu dünyada zaten maksimum çadır sayısına ulaştın! (Limit: %limit%)"
+  claim-overlap: "&cBu bölgede başka bir çadır var veya çok yakın!"
+  wrong-world: "&cBu çadırı düzenlemek için aynı dünyada olmalısın! (Çadırın bulunduğu dünya: %claim-world%, Sen: %player-world%)"
   invalid-tent-selection: "&cGeçersiz çadır seçimi. Lütfen tekrar deneyin ya da yetkililere bildirin."
-  no-boundary-selected: "&cLütfen önce bir sınır belirleyin (sol tık)."
+  no-boundary-selected: "&cLütfen önce sınırlardan emin olun, (sol tık)."
   claim-confirmed: "&aClaim başarıyla oluşturuldu!"
-  claim-enter-subtitle: "&aClaim sahibi: &e%owner%"
-  claim-purchased: "&aClaim satın alındı! Fiyat: &e%price% Dirhem"
+  purchase-success: "&aClaim satın alındı! Fiyat: &e%price% Dirhem"
   not-enough-money: "&cYeterli Dirhem'in yok.."
   claim-preview: "&aClaim önizlemesi gösteriliyor. Boyut: &e%size%x%size%"
   claim-expired: "&cClaim'inin süresi doldu. Koordinatlar: &e%location%"
   claim-limit-reached: "&cBu dünyada maksimum claim sayısına ulaştın."
   claim-too-close: "&cBu claim diğerine çok yakın."
-  remove-member-prompt: "&aÇıkarmak istediğiniz üyenin adını yazınız."
+  remove-member-prompt: "&aÇıkarmak istediğiniz üyenin ismini yazınız"
   removed-from-claim: "&c%owner% adlı oyuncu sizi claim'inden çıkardı."
   boundaries-shown: "&aClaim sınırları gösteriliyor."
+  add-member-prompt: "&aEklemek istediğiniz oyuncunun adını sohbete yazın."
+  boundaries-hidden: "&aClaim sınırları gösterimi sona erdi."
+  tent-not-recognized: "&cÇadır tipi tanınmadı."
+  cannot-add-self: "&cKendinizi claim'e ekleyemezsiniz."
+  cannot-remove-self: "&cKendinizi çıkaramazsınız."
+  remove-member-timeout: "&cÜye çıkarma işlemi zaman aşımına uğradı."
+  permission-edit-cancelled: "&cYetki düzenleme veya üye kaldırma işlemi iptal edildi."
+  remove-member-cancelled: "&c%player% adlı üye claim'den çıkarılmadı, işlem iptal edildi."
+  claim-disbanded: "&cClaim kaldırıldı"
+  invalid-placement: "&cÇadır burada yerleştirilemez, zemin sağlam değil!"
+  too-close: "&cBu konum başka bir claim'e çok yakın! (Minimum mesafe: %distance%)"
+  rent-paid: "&aKira ödendi! Süre: &e%duration% gün, Fiyat: &e%price% Dirhem"
+  rent-failed: "&cKira ödenemedi! Kalan deneme: &e%attempts%, Fiyat: &e%price% Dirhem"
+  rent-not-due: "&cKira ödeme zamanı henüz gelmedi."
+  claim-disbanded-rent: "&cClaim kira ödenmediği için kaldırıldı. Konum: &e%location%"

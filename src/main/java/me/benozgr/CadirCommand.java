@@ -11,15 +11,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CadirCommand implements CommandExecutor, Listener {
 
@@ -33,7 +30,7 @@ public class CadirCommand implements CommandExecutor, Listener {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(plugin.getMessage("only-players", null));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessage("only-players", null)));
             return true;
         }
 
@@ -44,70 +41,67 @@ public class CadirCommand implements CommandExecutor, Listener {
             return true;
         }
 
-        switch (args[0].toLowerCase()) {
-            case "satın-al":
-                plugin.getTentPurchaseMenu().openMenu(player);
-                break;
-            case "çadırlarım":
-                openMyClaimsMenu(player);
-                break;
-            default:
-                player.sendMessage(plugin.getMessage("invalid-subcommand", null));
-                break;
+        String subCommand = args[0].toLowerCase();
+
+        if (subCommand.equals("satın-al")) {
+            new TentPurchaseMenu(plugin).openMenu(player);
+            return true;
+        } else if (subCommand.equals("çadırlarım")) {
+            openMyClaimsMenu(player);
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private void openMainMenu(Player player) {
-        String title = plugin.getConfig().getString("gui-titles.main-menu", "&aÇadır Menüsü");
-        int size = plugin.getConfig().getInt("gui-titles.main-menu-size", 9);
-        Inventory menu = Bukkit.createInventory(null, size, ChatColor.translateAlternateColorCodes('&', title));
+        ConfigurationSection menuConfig = plugin.getConfig().getConfigurationSection("gui-titles");
+        String title = ChatColor.translateAlternateColorCodes('&', menuConfig.getString("main-menu", "&aÇadır Menüsü"));
+        Inventory menu = Bukkit.createInventory(null, menuConfig.getInt("main-menu-size", 9), title);
 
-        ConfigurationSection purchaseItemConfig = plugin.getConfig().getConfigurationSection("main-menu-items.purchase-tent");
-        if (purchaseItemConfig != null) {
-            ItemStack purchaseItem = createMenuItem(purchaseItemConfig);
-            int slot = purchaseItemConfig.getInt("slot", 2);
-            menu.setItem(slot, purchaseItem);
-        }
+        ConfigurationSection itemsConfig = plugin.getConfig().getConfigurationSection("main-menu-items");
 
-        ConfigurationSection myClaimsItemConfig = plugin.getConfig().getConfigurationSection("main-menu-items.my-claims");
-        if (myClaimsItemConfig != null) {
-            ItemStack myClaimsItem = createMenuItem(myClaimsItemConfig);
-            int slot = myClaimsItemConfig.getInt("slot", 6);
-            menu.setItem(slot, myClaimsItem);
-        }
+        ItemStack purchaseTent = createMenuItem(itemsConfig.getConfigurationSection("purchase-tent"));
+        ItemStack myClaims = createMenuItem(itemsConfig.getConfigurationSection("my-claims"));
+
+        menu.setItem(itemsConfig.getConfigurationSection("purchase-tent").getInt("slot"), purchaseTent);
+        menu.setItem(itemsConfig.getConfigurationSection("my-claims").getInt("slot"), myClaims);
 
         player.openInventory(menu);
     }
 
-    private void openMyClaimsMenu(Player player) {
+    public void openMyClaimsMenu(Player player) {
+        List<Claim> playerClaims = plugin.getClaimManager().getClaims(player.getUniqueId());
+        if (playerClaims.isEmpty()) {
+            player.sendMessage(plugin.getMessage("no-tent", null));
+            return;
+        }
+
         String title = plugin.getConfig().getString("gui-titles.my-claims-menu", "&aÇadırlarım");
         int size = plugin.getConfig().getInt("gui-titles.my-claims-menu-size", 27);
         Inventory menu = Bukkit.createInventory(null, size, ChatColor.translateAlternateColorCodes('&', title));
 
-        Map<UUID, Claim> claims = plugin.getClaimManager().getClaims();
-        for (Claim claim : claims.values()) {
-            if (claim.getOwner().equals(player.getUniqueId())) {
-                ItemStack claimItem = new ItemStack(Material.MAP);
-                ItemMeta meta = claimItem.getItemMeta();
+        for (Claim claim : playerClaims) {
+            ItemStack claimItem = new ItemStack(Material.MAP);
+            ItemMeta meta = claimItem.getItemMeta();
 
-                String tentType = claim.getTentType();
-                String displayName = plugin.getConfig().getString("gui.items." + tentType + ".name", "&e" + tentType);
-                meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+            String displayName = ChatColor.translateAlternateColorCodes('&', "&e" + claim.getName());
+            meta.setDisplayName(displayName);
 
-                List<String> lore = new ArrayList<>();
-                lore.add(ChatColor.GRAY + "Koordinatlar: " + ChatColor.WHITE +
-                        claim.getLocation().getBlockX() + ", " +
-                        claim.getLocation().getBlockY() + ", " +
-                        claim.getLocation().getBlockZ());
-                lore.add(ChatColor.GRAY + "Süre: " + ChatColor.WHITE +
-                        (claim.getExpirationDate() - System.currentTimeMillis()) / (1000 * 60 * 60 * 24) + " gün kaldı");
-                meta.setLore(lore);
-
-                claimItem.setItemMeta(meta);
-                menu.addItem(claimItem);
+            List<String> lore = new ArrayList<>();
+            ConfigurationSection loreConfig = plugin.getConfig().getConfigurationSection("my-claims-items.lore");
+            if (loreConfig != null) {
+                for (String line : loreConfig.getStringList("default")) {
+                    line = line.replace("%x%", String.valueOf(claim.getLocation().getBlockX()))
+                            .replace("%y%", String.valueOf(claim.getLocation().getBlockY()))
+                            .replace("%z%", String.valueOf(claim.getLocation().getBlockZ()))
+                            .replace("%days%", getRemainingDays(claim.getExpirationDate()));
+                    lore.add(ChatColor.translateAlternateColorCodes('&', line));
+                }
             }
+            meta.setLore(lore);
+            claimItem.setItemMeta(meta);
+            menu.addItem(claimItem);
         }
 
         player.openInventory(menu);
@@ -124,38 +118,51 @@ public class CadirCommand implements CommandExecutor, Listener {
         meta.setDisplayName(name);
         meta.setLore(lore);
         item.setItemMeta(meta);
-
         return item;
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
-
         Player player = (Player) event.getWhoClicked();
-        Inventory clickedInventory = event.getClickedInventory();
-        ItemStack clickedItem = event.getCurrentItem();
 
-        // Get the InventoryView
-        InventoryView view = event.getView();
-
-        // Check if the clicked inventory is the main menu
         String mainMenuTitle = ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("gui-titles.main-menu", "&aÇadır Menüsü"));
-        if (clickedInventory != null && mainMenuTitle.equals(view.getTitle())) {
-            event.setCancelled(true); // Prevent taking items
+        String myClaimsTitle = ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("gui-titles.my-claims-menu", "&aÇadırlarım"));
 
-            if (clickedItem == null || !clickedItem.hasItemMeta()) return;
+        if (!event.getView().getTitle().equals(mainMenuTitle) && !event.getView().getTitle().equals(myClaimsTitle)) return;
 
-            // Check which item was clicked
-            String purchaseItemName = ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("main-menu-items.purchase-tent.name", "&eÇadır Satın Al"));
-            String myClaimsItemName = ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("main-menu-items.my-claims.name", "&eÇadırlarım"));
+        event.setCancelled(true);
 
-            String clickedItemName = ChatColor.stripColor(clickedItem.getItemMeta().getDisplayName());
-            if (clickedItemName.equals(ChatColor.stripColor(purchaseItemName))) {
-                plugin.getTentPurchaseMenu().openMenu(player);
-            } else if (clickedItemName.equals(ChatColor.stripColor(myClaimsItemName))) {
+        ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem == null || !clickedItem.hasItemMeta()) return;
+
+        ConfigurationSection itemsConfig = plugin.getConfig().getConfigurationSection("main-menu-items");
+        String purchaseTentName = ChatColor.translateAlternateColorCodes('&', itemsConfig.getString("purchase-tent.name"));
+        String myClaimsName = ChatColor.translateAlternateColorCodes('&', itemsConfig.getString("my-claims.name"));
+
+        String clickedName = clickedItem.getItemMeta().getDisplayName();
+
+        if (event.getView().getTitle().equals(mainMenuTitle)) {
+            if (clickedName.equals(purchaseTentName)) {
+                new TentPurchaseMenu(plugin).openMenu(player);
+            } else if (clickedName.equals(myClaimsName)) {
                 openMyClaimsMenu(player);
             }
+        } else if (event.getView().getTitle().equals(myClaimsTitle)) {
+            List<Claim> playerClaims = plugin.getClaimManager().getClaims(player.getUniqueId());
+            int slot = event.getSlot();
+            if (slot >= 0 && slot < playerClaims.size()) {
+                Claim selectedClaim = playerClaims.get(slot);
+                new ClaimManagementMenu(plugin).openMenu(player, selectedClaim);
+            }
         }
+    }
+
+    private String getRemainingDays(Date expirationDate) {
+        if (expirationDate == null) return "N/A";
+        long diff = expirationDate.getTime() - System.currentTimeMillis();
+        if (diff <= 0) return "Bitti";
+        long days = diff / (1000 * 60 * 60 * 24);
+        return String.valueOf(days);
     }
 }

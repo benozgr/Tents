@@ -8,6 +8,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.Cancellable;
 
+import java.util.List;
+
 public class ClaimProtectionListener implements Listener {
 
     private final ClaimManager claimManager;
@@ -27,17 +29,19 @@ public class ClaimProtectionListener implements Listener {
     }
 
     private void handleClaimProtection(Player player, Location location, Cancellable event, String permission) {
-        for (Claim claim : claimManager.getClaims().values()) {
-            if (isInClaim(location, claim) && !claim.getOwner().equals(player.getUniqueId())) {
-                // Allow admins to bypass protection
-                if (claim.isAdmin(player.getUniqueId())) {
-                    return;
-                }
+        for (List<Claim> claimList : claimManager.getClaims().values()) {
+            for (Claim claim : claimList) {
+                if (isInClaim(location, claim) && !claim.getOwner().equals(player.getUniqueId())) {
+                    // Allow players with add_members permission to bypass protection (equivalent to old admin role)
+                    if (claim.hasPermission(player.getUniqueId(), "add_members")) {
+                        return;
+                    }
 
-                if (!claim.hasPermission(player.getUniqueId(), permission)) {
-                    event.setCancelled(true);
-                    player.sendMessage(claimManager.getPlugin().getMessage("cannot-build-here", null));
-                    return;
+                    if (!claim.hasPermission(player.getUniqueId(), permission)) {
+                        event.setCancelled(true);
+                        player.sendMessage(claimManager.getPlugin().getMessage("cannot-build-here", null));
+                        return;
+                    }
                 }
             }
         }
